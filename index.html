@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WildDet3D: Scaling Promptable 3D Detection in the Wild</title>
+  <meta name="description" content="WildDet3D: A unified geometry-aware architecture for open-vocabulary monocular 3D object detection supporting text, point, and box prompts with optional depth." />
+  <meta property="og:title" content="WildDet3D: Scaling Promptable 3D Detection in the Wild" />
+  <meta property="og:description" content="Open-vocabulary monocular 3D detection with 1M+ images across 13.5K categories." />
+  <meta property="og:type" content="website" />
+  <link rel="stylesheet" href="static/css/main.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css" />
+</head>
+<body>
+
+<div class="top-stripe"></div>
+
+<header>
+  <div class="title-row">
+    <img src="static/img/wilddet3d_logo.svg" alt="WildDet3D logo" class="logo" />
+    <h1><span class="highlight">WildDet3D</span>: Scaling Promptable 3D Detection in the Wild</h1>
+  </div>
+</header>
+
+<!-- ── AUTHORS ── -->
+<div class="authors-section">
+  <div class="authors-block">
+    <div class="authors-row">
+      <span class="author-name costar">Weikai Huang<sup>1,2</sup> <span class="heart">&#9829;</span></span>,
+      <span class="author-name costar">Jieyu Zhang<sup>1,2</sup> <span class="heart">&#9829;</span></span>
+    </div>
+    <div class="authors-row">
+      <span class="author-name">Sijun Li<sup>2</sup></span>,
+      <span class="author-name">Taoyang Jia<sup>2</sup></span>,
+      <span class="author-name">Jiafei Duan<sup>1,2</sup></span>,
+      <span class="author-name">Yunqian Cheng<sup>1</sup></span>,
+      <span class="author-name">Jaemin Cho<sup>1,2</sup></span>,
+      <span class="author-name">Matthew Wallingford<sup>1</sup></span>,
+      <span class="author-name">Rustin Soraki<sup>1,2</sup></span>,
+      <span class="author-name">Chris Dongjoo Kim<sup>1</sup></span>,
+      <span class="author-name">Shuo Liu<sup>1,2</sup></span>,
+      <span class="author-name">Donovan Clay<sup>1,2</sup></span>,
+      <span class="author-name">Taira Anderson<sup>1</sup></span>,
+      <span class="author-name">Winson Han<sup>1</sup></span>
+    </div>
+    <div class="authors-row">
+      <span class="author-name">Ali Farhadi<sup>1,2</sup></span>,
+      <span class="author-name">Bharath Hariharan<sup>3</sup></span>,
+      <span class="author-name costar">Zhongzheng Ren<sup>1,2,4</sup> <span class="heart">&#9829;</span></span>,
+      <span class="author-name costar">Ranjay Krishna<sup>1,2</sup> <span class="heart">&#9829;</span></span>
+    </div>
+  </div>
+  <div class="affiliations">
+    <sup>1</sup>Allen Institute for AI &nbsp;&nbsp;
+    <sup>2</sup>University of Washington &nbsp;&nbsp;
+    <sup>3</sup>Cornell University &nbsp;&nbsp;
+    <sup>4</sup>UNC-Chapel Hill
+  </div>
+  <div class="contrib-note"><span class="heart">&#9829;</span> denotes core contributors.</div>
+</div>
+
+<!-- ── LINKS ── -->
+<div class="links">
+  <a class="link-btn secondary" href="https://github.com/allenai/WildDet3D" target="_blank"><i class="fa fa-github"></i> Code</a>
+  <a class="link-btn primary" href="https://huggingface.co/spaces/allenai/WildDet3D" target="_blank"><i class="fa fa-play-circle"></i> Demo</a>
+  <a class="link-btn outline" href="https://huggingface.co/allenai/WildDet3D" target="_blank">&#129303; Model</a>
+  <a class="link-btn outline" href="https://huggingface.co/datasets/allenai/WildDet3D-Data" target="_blank">&#129303; Dataset</a>
+  <a class="link-btn outline" href="https://huggingface.co/datasets/allenai/WildDet3D-Bench" target="_blank">&#129303; Benchmark</a>
+  <a class="link-btn outline" href="https://apps.apple.com/us/app/wilddet3d/id6760861157" target="_blank"><i class="fa fa-apple"></i> iPhone App</a>
+  <a class="link-btn outline" href="https://allenai.org/blog/wilddet3d" target="_blank"><i class="fa fa-pencil"></i> Blog</a>
+</div>
+
+<main>
+
+  <!-- ── ABSTRACT ── -->
+  <section>
+    <h2>Abstract</h2>
+    <div class="abstract-box">
+      <p>
+        Understanding objects in 3D from a single image is a cornerstone of spatial intelligence. A key step toward this goal is monocular 3D object detection&mdash;recovering the extent, location, and orientation of objects from an input RGB image. To be practical in the open world, such a detector must generalize beyond closed-set categories, support diverse prompt modalities, and leverage geometric cues when available. Progress is hampered by two bottlenecks: existing methods are designed for a single prompt type and lack a mechanism to incorporate additional geometric cues, and current 3D datasets cover only narrow categories in controlled environments, limiting open-world transfer.
+      </p>
+      <p>
+        In this work we address both gaps. First, we introduce <strong>WildDet3D</strong>, a unified geometry-aware architecture that natively accepts text, point, and box prompts and can incorporate auxiliary depth signals at inference time. Second, we present <strong>WildDet3D-Data</strong>, the largest open 3D detection dataset to date, constructed by generating candidate 3D boxes from existing 2D annotations and retaining only human-verified ones, yielding over 1M images across 13.5K categories in diverse real-world scenes.
+      </p>
+      <p>
+        WildDet3D establishes a new state-of-the-art across multiple benchmarks and settings.
+        In the open-world setting, it achieves <strong>22.6/24.8 AP<sub>3D-dist</sub></strong> on our newly introduced <strong>WildDet3D-Bench</strong> with text and box prompts.
+        On Omni3D, it reaches <strong>34.2/36.4 AP<sub>3D</sub></strong> with text and box prompts, respectively.
+        In zero-shot evaluation, it achieves <strong>40.3/48.9 ODS</strong> on Argoverse&nbsp;2 and ScanNet.
+        Notably, incorporating depth cues at inference time yields substantial additional gains (<strong>+20.7 AP</strong> on average across settings).
+      </p>
+    </div>
+  </section>
+
+  <!-- ── TEASER ── -->
+  <section>
+    <figure class="fig-hero">
+      <img src="static/img/teaser_5-1.png" alt="WildDet3D overview: single RGB image with optional depth, flexible prompts, and 3D bounding box predictions across diverse scenes" />
+      <figcaption>
+        <strong>Overview of WildDet3D.</strong> Given a single RGB image and an optional depth map, WildDet3D performs open-vocabulary monocular 3D object detection by accepting flexible prompt modalities&mdash;text queries, 2D point clicks, or 2D bounding boxes&mdash;and predicting full 3D bounding boxes for the specified objects. This unified framework enables interactive, open-world 3D perception across diverse scenes and thousands of object categories.
+      </figcaption>
+    </figure>
+  </section>
+
+  <!-- ── VIDEO DEMO ── -->
+  <section>
+    <h2>Video Demo</h2>
+    <div class="video-embed">
+      <iframe src="https://www.youtube.com/embed/RgHKmOqb7I4" title="WildDet3D Video Demo" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    </div>
+
+    <h3>iPhone App Demo</h3>
+    <div class="video-embed">
+      <iframe src="https://www.youtube.com/embed/LJPNJ8jpOao" title="WildDet3D iPhone Demo" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    </div>
+  </section>
+
+  <!-- ── INTERACTIVE VISUALIZATIONS ── -->
+  <section>
+    <h2>Interactive Visualizations</h2>
+    <p>
+      Explore WildDet3D-Data and model predictions interactively through our visualization servers.
+    </p>
+
+    <h3>Dataset Viewer</h3>
+    <p>Browse WildDet3D-Data interactively&mdash;explore 3D bounding box annotations across 1M+ images and 13.5K categories in diverse scenes.</p>
+    <div class="embed-wrap">
+      <a class="fullscreen-btn" href="https://silicon23.github.io/WildDet3D-data-demo" target="_blank" title="Open in new tab"><i class="fa fa-external-link"></i></a>
+      <iframe src="https://silicon23.github.io/WildDet3D-data-demo" title="WildDet3D Dataset Viewer" allowfullscreen loading="lazy"></iframe>
+    </div>
+
+    <h3>Model Comparison Visualizer</h3>
+    <p>Compare WildDet3D predictions against baselines on the full WildDet3D-Bench with side-by-side 3D box visualizations.</p>
+    <div class="embed-wrap">
+      <a class="fullscreen-btn" href="https://silicon23.github.io/WildDet3D-model-comparison-demo" target="_blank" title="Open in new tab"><i class="fa fa-external-link"></i></a>
+      <iframe src="https://silicon23.github.io/WildDet3D-model-comparison-demo" title="WildDet3D Model Comparison Visualizer" allowfullscreen loading="lazy"></iframe>
+    </div>
+  </section>
+
+  <!-- ── ARCHITECTURE ── -->
+  <section>
+    <h2>Model Architecture</h2>
+    <p>
+      WildDet3D uses a unified geometry-aware architecture with dual-vision encoders for RGB and optional RGBD input. A depth fusion module integrates geometric cues when available, while a promptable detector unifies text, point, and box prompts. Cascaded 2D and 3D detection heads predict full 3D bounding boxes with metric depth, dimensions, and 6-DoF orientation. The model gracefully degrades to monocular mode when depth is unavailable.
+    </p>
+    <figure>
+      <img src="static/img/model_architecture.png" alt="WildDet3D model architecture diagram" />
+      <figcaption>
+        <strong>WildDet3D architecture.</strong> Dual-vision encoders process the image and optional depth. A ControlNet-style depth fusion module injects geometric features, and a promptable detector supports text, point, and box prompts. The 3D detection head produces metric 3D bounding boxes with depth, dimensions, and rotation.
+      </figcaption>
+    </figure>
+  </section>
+
+  <!-- ── DATA ── -->
+  <section>
+    <h2>WildDet3D-Data</h2>
+    <p>
+      We introduce <strong>WildDet3D-Data</strong>, the largest open 3D detection dataset to date. It is constructed by generating candidate 3D boxes from existing 2D annotations across COCO, LVIS, Objects365, and V3Det, then filtering with geometric/semantic checks and retaining only human-verified annotations. The result is a diverse, large-scale dataset spanning indoor, outdoor, and nature scenes.
+    </p>
+    <div class="stats-strip">
+      <div class="stat-card">
+        <div class="num">1M+</div>
+        <div class="lbl">Images</div>
+      </div>
+      <div class="stat-card">
+        <div class="num">13.5K</div>
+        <div class="lbl">Categories</div>
+      </div>
+      <div class="stat-card">
+        <div class="num">3.7M</div>
+        <div class="lbl">3D Annotations</div>
+      </div>
+      <div class="stat-card">
+        <div class="num">22</div>
+        <div class="lbl">Scene Types</div>
+      </div>
+      <div class="stat-card">
+        <div class="num">138&times;</div>
+        <div class="lbl">vs. Omni3D Categories</div>
+      </div>
+    </div>
+
+    <figure style="margin-top: 32px;">
+      <img src="static/img/scene_distribution-1.png" alt="Scene category distribution of WildDet3D-Data" />
+      <figcaption>
+        <strong>Scene category distribution.</strong> WildDet3D-Data spans 22 scene categories across indoor (52%), urban (32%), and nature (15%) environments, providing broad coverage of real-world settings.
+      </figcaption>
+    </figure>
+
+    <figure style="margin-top: 32px;">
+      <img src="static/img/qualitative_data_example-1.png" alt="Qualitative examples from WildDet3D-Data" />
+      <figcaption>
+        <strong>Qualitative examples from WildDet3D-Data.</strong> Each pair shows 3D bounding box annotations overlaid on the input image with category labels (left) and the corresponding 3D bounding boxes rendered in the reconstructed point cloud (right). The dataset covers diverse settings including indoor scenes, outdoor environments, and animals in the wild.
+      </figcaption>
+    </figure>
+  </section>
+
+  <!-- ── QUALITATIVE RESULTS ── -->
+  <section>
+    <h2>Qualitative Results</h2>
+
+    <h3>Text-Prompted Detection</h3>
+    <figure>
+      <img src="static/img/qualitative_text_prompt.jpg" alt="Text-prompted 3D detection results across diverse scenes" />
+      <figcaption>
+        <strong>Text-prompted comparison.</strong> WildDet3D detects objects specified by open-vocabulary text categories, producing accurate 3D bounding boxes across indoor and outdoor scenes.
+      </figcaption>
+    </figure>
+
+    <h3>Box-Prompted Detection</h3>
+    <figure>
+      <img src="static/img/qualitative_box_prompt.jpg" alt="Box-prompted 3D detection results" />
+      <figcaption>
+        <strong>Box-prompted comparison.</strong> Given 2D bounding boxes as prompts, WildDet3D lifts them into accurate 3D bounding boxes with metric depth, dimensions, and orientation.
+      </figcaption>
+    </figure>
+  </section>
+
+  <!-- ── APPLICATIONS ── -->
+  <section>
+    <h2>Applications</h2>
+    <p>
+      Beyond benchmark evaluation, WildDet3D is deployed across a range of real-world platforms, demonstrating its versatility as a general-purpose 3D perception module.
+    </p>
+
+    <div class="app-grid">
+      <div class="app-card">
+        <img src="static/img/demo_huggingface.png" alt="WildDet3D web demo" />
+        <div class="app-card-body">
+          <h3><i class="fa fa-globe"></i> Web Demo</h3>
+          <p>Interactive demo on Hugging Face Spaces. Upload any image, provide text or box prompts, and visualize 3D bounding box predictions in real time.</p>
+        </div>
+      </div>
+
+      <div class="app-card">
+        <img src="static/img/demo_iphone.png" alt="WildDet3D iPhone app" />
+        <div class="app-card-body">
+          <h3><i class="fa fa-apple"></i> iPhone App</h3>
+          <p>On-device 3D detection via ARKit with LiDAR depth, supporting open-vocabulary text queries and 2D box prompts with AR overlays anchored to the physical scene.</p>
+        </div>
+      </div>
+
+      <div class="app-card">
+        <img src="static/img/demo_vlm.png" alt="WildDet3D VLM agent" />
+        <div class="app-card-body">
+          <h3><i class="fa fa-comments"></i> VLM Agent</h3>
+          <p>Paired with vision-language models for referring expression localization&mdash;the VLM reasons and produces a 2D box, WildDet3D lifts it to a full 3D bounding box.</p>
+        </div>
+      </div>
+
+      <div class="app-card">
+        <img src="static/img/demo_tracking.gif" alt="WildDet3D zero-shot tracking" />
+        <div class="app-card-body">
+          <h3><i class="fa fa-crosshairs"></i> Zero-Shot Tracking</h3>
+          <p>Track objects in video sequences with zero-shot 3D detection, combining per-frame predictions with temporal consistency.</p>
+        </div>
+      </div>
+
+      <div class="app-card">
+        <img src="static/img/demo_meta_quest.png" alt="WildDet3D on Meta Quest 3" />
+        <div class="app-card-body">
+          <h3><i class="fa fa-eye"></i> Augmented Reality (Meta Quest 3)</h3>
+          <p>Passthrough AR with 3D bounding boxes rendered in real time. Users can query objects by category and see metric 3D boxes anchored in physical space.</p>
+        </div>
+      </div>
+
+      <div class="app-card">
+        <img src="static/img/demo_robotics.png" alt="WildDet3D for robotic manipulation" />
+        <div class="app-card-body">
+          <h3><i class="fa fa-cog"></i> Robotics</h3>
+          <p>Open-vocabulary 3D detection for Franka Emika Panda manipulation. Predicted 3D boxes are transformed to the robot's frame for zero-shot grasp pose generation.</p>
+        </div>
+      </div>
+    </div>
+
+    <h3>More Examples</h3>
+    <div class="demo-gallery">
+      <figure class="demo-item">
+        <img src="static/img/demo_driving_1.gif" alt="3D detection on driving scene" />
+        <figcaption>Driving scene detection</figcaption>
+      </figure>
+      <figure class="demo-item">
+        <img src="static/img/demo_driving_2.gif" alt="3D detection on driving scene" />
+        <figcaption>Driving scene detection</figcaption>
+      </figure>
+      <figure class="demo-item">
+        <img src="static/img/demo_text_street.png" alt="Text-prompted street scene" />
+        <figcaption>Text-prompted street scene</figcaption>
+      </figure>
+      <figure class="demo-item">
+        <img src="static/img/demo_text_indoor.png" alt="Text-prompted indoor scene" />
+        <figcaption>Text-prompted indoor scene</figcaption>
+      </figure>
+      <figure class="demo-item">
+        <img src="static/img/demo_text_outdoor_cafe.png" alt="Text-prompted outdoor cafe" />
+        <figcaption>Text-prompted outdoor cafe</figcaption>
+      </figure>
+      <figure class="demo-item">
+        <img src="static/img/demo_text_urban.png" alt="Text-prompted urban scene" />
+        <figcaption>Text-prompted urban scene</figcaption>
+      </figure>
+    </div>
+  </section>
+
+</main>
+
+<!-- ── CITATION ── -->
+<div class="citation-section">
+  <div class="citation-inner">
+    <h2>Citation</h2>
+    <div class="coming-soon">
+      <p><i class="fa fa-file-text-o"></i> &nbsp; Paper and BibTeX coming soon.</p>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <p>
+    <a href="https://allenai.org" target="_blank">Allen Institute for AI</a> &nbsp;&middot;&nbsp;
+    <a href="https://github.com/allenai/WildDet3D" target="_blank">GitHub</a> &nbsp;&middot;&nbsp;
+    <a href="https://allenai.org/blog/wilddet3d" target="_blank">Blog</a>
+  </p>
+</footer>
+
+</body>
+</html>
