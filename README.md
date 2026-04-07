@@ -135,7 +135,11 @@
 - [Installation](#installation)
 - [Inference](#inference)
 - [Evaluation](#evaluation)
+  - [WildDet3D-Bench](#wilddet3d-bench)
+  - [WildDet3D-Stereo4D-Bench](#wilddet3d-stereo4d-bench)
 - [Results](#results)
+  - [WildDet3D-Bench (In-the-Wild)](#wilddet3d-bench-in-the-wild)
+  - [Omni3D](#omni3d)
 - [WildDet3D Data](#wilddet3d-data)
 - [Citation](#citation)
 
