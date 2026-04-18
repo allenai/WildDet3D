@@ -168,7 +168,9 @@ cd WildDet3D
 conda create -n wilddet3d python=3.11 -y
 conda activate wilddet3d
 
-# Install all dependencies
+pip install torch==2.5.1 torchvision==0.20.1 --index-url https://download.pytorch.org/whl/cu121
+pip install vis4d==1.0.0
+pip install git+https://github.com/SysCV/vis4d_cuda_ops.git --no-build-isolation --no-cache-dir
 pip install -r requirements.txt
 ```
 
