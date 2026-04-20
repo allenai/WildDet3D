@@ -8,9 +8,6 @@ import os
 import sys
 from pathlib import Path
 
-import numpy as np
-import torch
-
 # Ensure project root is in path for wilddet3d imports
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
@@ -125,27 +122,16 @@ def run_inference_single_frame(
     original_hw = [data["original_hw"]]
     padding = [data["padding"]]
 
-    # Coordinate transform: original pixel -> padded 1008x1008
-    orig_h, orig_w = data["original_hw"]
-    pad_left, pad_right, pad_top, pad_bottom = data["padding"]
-    inp_h, inp_w = data["input_hw"]
-    padded_h = inp_h - pad_top - pad_bottom
-    padded_w = inp_w - pad_left - pad_right
-    scale_x = padded_w / orig_w
-    scale_y = padded_h / orig_h
-
     results = []
 
     for obj_id, bbox, category in valid_objects:
+        # WildDet3DPredictor expects box prompts in ORIGINAL image pixel space.
+        # It will internally convert to the model's input_hw space (resize + pad).
         x1, y1, x2, y2 = bbox
 
-        # Transform bbox to padded coordinates
-        pad_x1 = x1 * scale_x + pad_left
-        pad_y1 = y1 * scale_y + pad_top
-        pad_x2 = x2 * scale_x + pad_left
-        pad_y2 = y2 * scale_y + pad_top
-
-        prompt_text = f"geometric: {category}"
+        prompt_text = "geometric"
+        if category is not None and str(category).strip():
+            prompt_text = f"geometric: {str(category).strip()}"
 
         boxes_2d, boxes_3d, scores, scores_2d, scores_3d, class_ids, _ = model(
             images=images,
@@ -153,7 +139,7 @@ def run_inference_single_frame(
             input_hw=input_hw,
             original_hw=original_hw,
             padding=padding,
-            input_boxes=[[pad_x1, pad_y1, pad_x2, pad_y2]],
+            input_boxes=[[x1, y1, x2, y2]],
             prompt_text=prompt_text,
         )
 
