@@ -420,33 +420,6 @@ def scale_intrinsics_to_original(K, input_hw, original_hw):
     return K
 
 
-def transform_coords_to_input_space(x, y, original_hw, input_hw, padding):
-    """Transform coords from original image space to preprocessed input.
-
-    Args:
-        x, y: Coordinates in original image space
-        original_hw: (H, W) of original image
-        input_hw: (H, W) of preprocessed image (e.g., 1008x1008)
-        padding: (pad_left, pad_right, pad_top, pad_bottom)
-
-    Returns:
-        (new_x, new_y) in preprocessed input space
-    """
-    orig_h, orig_w = original_hw
-    pad_left, pad_right, pad_top, pad_bottom = padding
-
-    content_w = input_hw[1] - pad_left - pad_right
-    content_h = input_hw[0] - pad_top - pad_bottom
-
-    scale_x = content_w / orig_w
-    scale_y = content_h / orig_h
-
-    new_x = x * scale_x + pad_left
-    new_y = y * scale_y + pad_top
-
-    return new_x, new_y
-
-
 def on_image_select(
     evt: gr.SelectData, image, original_image, state,
     prompt_mode, point_label,
@@ -622,15 +595,10 @@ def run_wilddet3d(
 
         x1_orig, y1_orig = box_coords[0]
         x2_orig, y2_orig = box_coords[1]
-        x1, y1 = transform_coords_to_input_space(
-            x1_orig, y1_orig,
-            data["original_hw"], data["input_hw"], data["padding"],
-        )
-        x2, y2 = transform_coords_to_input_space(
-            x2_orig, y2_orig,
-            data["original_hw"], data["input_hw"], data["padding"],
-        )
-        box_xyxy = [float(x1), float(y1), float(x2), float(y2)]
+        box_xyxy = [
+            float(x1_orig), float(y1_orig),
+            float(x2_orig), float(y2_orig),
+        ]
 
         prompt_box = [x1_orig, y1_orig, x2_orig, y2_orig]
 
@@ -660,14 +628,6 @@ def run_wilddet3d(
                 None,
             )
 
-        transformed_points = []
-        for x_orig, y_orig, lbl in points:
-            x, y = transform_coords_to_input_space(
-                x_orig, y_orig,
-                data["original_hw"], data["input_hw"], data["padding"],
-            )
-            transformed_points.append((x, y, lbl))
-
         prompt_points = points
 
         results = detector(
@@ -676,7 +636,7 @@ def run_wilddet3d(
             input_hw=[data["input_hw"]],
             original_hw=[data["original_hw"]],
             padding=[data["padding"]],
-            input_points=[transformed_points],
+            input_points=[points],
             prompt_text=geo_prompt_text,
             return_predicted_intrinsics=True,
         )
