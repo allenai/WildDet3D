@@ -468,7 +468,7 @@ If you find this work useful, please cite:
 ```bibtex
 @misc{huang2026wilddet3dscalingpromptable3d,
       title={WildDet3D: Scaling Promptable 3D Detection in the Wild}, 
-      author={Weikai Huang and Jieyu Zhang and Sijun Li and Taoyang Jia and Jiafei Duan and Yunqian Cheng and Jaemin Cho and Mattew Wallingford and Rustin Soraki and Chris Dongjoo Kim and Donovan Clay and Taira Anderson and Winson Han and Ali Farhadi and Bharath Hariharan and Zhongzheng Ren and Ranjay Krishna},
+      author={Weikai Huang and Jieyu Zhang and Sijun Li and Taoyang Jia and Jiafei Duan and Yunqian Cheng and Jaemin Cho and Matthew Wallingford and Rustin Soraki and Chris Dongjoo Kim and Shuo Liu and Donovan Clay and Taira Anderson and Winson Han and Ali Farhadi and Bharath Hariharan and Zhongzheng Ren and Ranjay Krishna},
       year={2026},
       eprint={2604.08626},
       archivePrefix={arXiv},
