@@ -126,6 +126,19 @@
 <br><a href="assets/demo_robotics.mp4">Video</a>
 </td>
 </tr>
+<tr><td colspan="2"></td></tr>
+<tr>
+<td align="center" colspan="2">
+<a href="demo/boxer/README.md"><img src="assets/demo_boxer.gif" height="200"></a>
+</td>
+</tr>
+<tr>
+<td align="center" colspan="2">
+<b>Integrating with Meta FAIR's Boxer demo for indoor labelling</b>
+<br>WildDet3D replaces OWL + BoxerNet inside <a href="https://github.com/facebookresearch/boxer">Meta FAIR's Boxer</a> indoor labelling pipeline on Project Aria. Boxer's AriaLoader, offline fusion, online tracker, and 3D viewers all run on our outputs unchanged.
+<br><a href="demo/boxer/README.md">README</a>
+</td>
+</tr>
 </table>
 
 ## TODO
