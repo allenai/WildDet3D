@@ -13,8 +13,23 @@ from vis4d.vis.image.bbox3d_visualizer import BoundingBox3DVisualizer
 from vis4d.vis.image.canvas import PillowCanvasBackend
 from vis4d.zoo.base import get_default_callbacks_cfg
 
+from wilddet3d.data.datasets.argoverse import (
+    av2_class_map,
+    av2_det_map,
+)
+from wilddet3d.data.datasets.labelany3d_coco import (
+    labelany3d_coco_class_map,
+    labelany3d_coco_det_map,
+)
+from wilddet3d.data.datasets.scannet import (
+    scannet200_class_map,
+    scannet200_det_map,
+    scannet_class_map,
+    scannet_det_map,
+)
 from wilddet3d.eval.detect3d import Detect3DEvaluator
 from wilddet3d.eval.omni3d import Omni3DEvaluator
+from wilddet3d.eval.open import OpenDetect3DEvaluator
 from wilddet3d.vis.image.depth_visualizer import DepthVisualizer
 from configs.base.base_connector import (
     CONN_BBOX_3D_VIS,

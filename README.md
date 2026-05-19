@@ -145,7 +145,7 @@
 - [x] Release inference code
 - [x] Release WildDet3D-Bench evaluation
 - [x] Release training code
-- [ ] Release evaluation on other benchmarks (Omni3D, Argoverse2, ScanNet)
+- [x] Release evaluation on other benchmarks (Omni3D, Argoverse2, ScanNet)
 
 ## Contents
 - [Demo & Applications](#demo--applications)
@@ -160,6 +160,7 @@
 - [Results](#results)
   - [WildDet3D-Bench (In-the-Wild)](#wilddet3d-bench-in-the-wild)
   - [Omni3D](#omni3d)
+  - [Zero-shot Transfer (Argoverse 2 + ScanNet)](#zero-shot-transfer-argoverse-2--scannet)
 - [WildDet3D Data](#wilddet3d-data)
 - [Citation](#citation)
 
@@ -381,6 +382,45 @@ vis4d test --config configs/eval/stereo4d/box_prompt_with_depth.py --gpus 1 --ck
 | Box Prompt | `configs/eval/stereo4d/box_prompt.py` |
 | Box Prompt + Depth | `configs/eval/stereo4d/box_prompt_with_depth.py` |
 
+### Omni3D (in-domain) + zero-shot Argoverse 2 / ScanNet
+
+Omni3D is the primary training distribution; Argoverse 2 and ScanNet
+are held out and used for zero-shot evaluation. The evaluation protocol
+(datasets, splits, ODS metric, Base/Novel splits) follows the prior
+work **3D-MOOD** ([cvg/3D-MOOD](https://github.com/cvg/3D-MOOD)) so
+numbers are directly comparable to their reported results. Each
+benchmark has four mode configs (`text`, `text_with_depth`,
+`box_prompt`, `box_prompt_with_depth`):
+
+```bash
+export PYTHONPATH=$(pwd):$PYTHONPATH
+
+# Omni3D — reports AP per Omni3D sub-dataset (KITTI / nuScenes / SUNRGBD /
+# Hypersim / ARKitScenes / Objectron) plus the macro AP_3D.
+vis4d test --config configs/eval/omni3d/text.py             --gpus 1 --ckpt ckpt/wilddet3d_alldata_all_prompt_v1.0.pt
+vis4d test --config configs/eval/omni3d/text_with_depth.py  --gpus 1 --ckpt ckpt/wilddet3d_alldata_all_prompt_v1.0.pt
+vis4d test --config configs/eval/omni3d/box_prompt.py       --gpus 1 --ckpt ckpt/wilddet3d_alldata_all_prompt_v1.0.pt
+vis4d test --config configs/eval/omni3d/box_prompt_with_depth.py --gpus 1 --ckpt ckpt/wilddet3d_alldata_all_prompt_v1.0.pt
+
+# ScanNet (zero-shot) — reports AP / mATE / mASE / mAOE / ODS with a
+# Base / Novel split on 18 indoor categories (15 frequent indoors are
+# treated as Base).
+vis4d test --config configs/eval/scannet/text.py            --gpus 1 --ckpt ckpt/wilddet3d_alldata_all_prompt_v1.0.pt
+vis4d test --config configs/eval/scannet/text_with_depth.py --gpus 1 --ckpt ckpt/wilddet3d_alldata_all_prompt_v1.0.pt
+vis4d test --config configs/eval/scannet/box_prompt.py      --gpus 1 --ckpt ckpt/wilddet3d_alldata_all_prompt_v1.0.pt
+vis4d test --config configs/eval/scannet/box_prompt_with_depth.py --gpus 1 --ckpt ckpt/wilddet3d_alldata_all_prompt_v1.0.pt
+
+# Argoverse 2 (zero-shot) — reports the same metric family, with
+# Base = the 11 common AV2 driving categories.
+vis4d test --config configs/eval/argoverse/text.py            --gpus 1 --ckpt ckpt/wilddet3d_alldata_all_prompt_v1.0.pt
+vis4d test --config configs/eval/argoverse/text_with_depth.py --gpus 1 --ckpt ckpt/wilddet3d_alldata_all_prompt_v1.0.pt
+vis4d test --config configs/eval/argoverse/box_prompt.py      --gpus 1 --ckpt ckpt/wilddet3d_alldata_all_prompt_v1.0.pt
+vis4d test --config configs/eval/argoverse/box_prompt_with_depth.py --gpus 1 --ckpt ckpt/wilddet3d_alldata_all_prompt_v1.0.pt
+```
+
+See **[docs/EVALUATION.md](docs/EVALUATION.md)** for the metric
+definitions, data setup, and the per-benchmark config table.
+
 ## Training
 
 WildDet3D is trained in 3 stages. Each stage uses `vis4d fit`:
@@ -446,6 +486,30 @@ AP is computed at 3D IoU [0.5:0.95].
 | DetAny3D | 38.7 | **37.6** | 46.1 | 16.0 | 50.6 | 56.8 | 34.4 |
 | WildDet3D | **44.3** | 35.3 | 43.1 | 17.3 | 66.6 | 60.8 | 36.4 |
 | WildDet3D w/ depth | 42.8 | 35.9 | **58.7** | **30.4** | **76.6** | **68.5** | **45.8** |
+
+### Zero-shot Transfer (Argoverse 2 + ScanNet)
+
+Trained on Omni3D + In-the-Wild only; evaluated zero-shot on
+Argoverse 2 (outdoor driving, 26 classes) and ScanNet (indoor,
+18 classes). The dataset splits, ODS metric, and Base/Novel category
+groupings are taken from
+[3D-MOOD](https://github.com/cvg/3D-MOOD) so the numbers below are
+directly comparable to their reported baselines.
+ODS = (3·AP + (1 - mATE) + (1 - mASE) + (1 - mAOE)) / 6 using the
+canonical-rotation AOE convention. Higher is better for AP and ODS;
+lower is better for mATE, mASE, mAOE.
+
+| Method | Argoverse2 AP | mATE | mASE | mAOE | ODS | ScanNet AP | mATE | mASE | mAOE | ODS |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Cube R-CNN | 8.6 | 0.903 | 0.867 | 0.953 | 8.9 | 20.0 | 0.733 | 0.774 | 0.921 | 19.5 |
+| 3D-MOOD Swin-T | 14.8 | 0.782 | 0.697 | 0.612 | 22.5 | 27.3 | 0.630 | 0.726 | 0.650 | 30.2 |
+| 3D-MOOD Swin-B | 14.7 | 0.755 | 0.680 | 0.580 | 23.8 | 28.8 | 0.612 | **0.706** | 0.655 | 31.5 |
+| WildDet3D | 43.4 | 0.714 | 0.645 | 0.526 | 40.3 | 56.5 | 0.601 | 0.720 | 0.437 | 48.9 |
+| WildDet3D w/ depth | **43.4** | **0.701** | **0.645** | **0.526** | **40.4** | **57.6** | **0.589** | 0.707 | **0.422** | **50.2** |
+
+GT depth helps on ScanNet (+1.3 ODS) where indoor scenes benefit from
+metric depth; the gain on Argoverse 2 is marginal, suggesting the
+monocular depth head is already well-calibrated for outdoor driving.
 
 ### Qualitative Results
 

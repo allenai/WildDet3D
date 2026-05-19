@@ -2,6 +2,11 @@
 
 Evaluation uses the [vis4d](https://github.com/SysCV/vis4d) framework. Follow the [vis4d documentation](https://vis4d.readthedocs.io/) for general setup.
 
+The Omni3D / ScanNet / Argoverse 2 evaluation protocol — dataset
+splits, ODS metric, Base/Novel groupings — follows the prior work
+**3D-MOOD** ([cvg/3D-MOOD](https://github.com/cvg/3D-MOOD)) so the
+numbers reported here are directly comparable to theirs.
+
 ## Quick Start
 
 ```bash
@@ -14,7 +19,11 @@ vis4d test --config configs/eval/<benchmark>/<mode>.py \
 
 | Metric | Description |
 |---|---|
-| **AP** | Average Precision (COCO-style, 3D IoU thresholds) |
+| **AP** | Average Precision (COCO-style 3D IoU). For ScanNet / Argoverse2 / In-the-Wild / DROID the evaluator switches to center-distance ("dist" / "prox") matching and additionally reports the ODS family below. |
+| **ATE / ASE / AOE** | Mean translation / scale / orientation error of matched detections. |
+| **ODS / ODS_Sym / ODS_Canonical** | nuScenes-style Open Detection Score: `(3*mAP + (1 - mATE) + (1 - mASE) + (1 - mAOE)) / 6`. The `_Canonical` variant uses canonical-rotation AOE (matches the model's training target) and is the primary ranking metric for open-vocabulary benchmarks. |
+| **AP_\<Subset>** | Omni3D reports a separate AP per Omni3D sub-dataset (KITTI / nuScenes / SUNRGBD / Hypersim / ARKitScenes / Objectron). |
+| **Base / Novel** | Most evaluators also produce a Base / Novel split. The "Base" set is the canonical-category list of each benchmark (e.g. 15 SUNRGBD-style indoor categories for ScanNet, 11 AV2 driving categories for Argoverse2, the 45 single-word frequent targets for DROID); everything else is Novel. |
 
 ## Benchmarks
 
@@ -28,7 +37,6 @@ Training benchmark. Evaluates on KITTI, nuScenes, SUNRGBD, Hypersim, ARKitScenes
 | Text + Depth | `configs/eval/omni3d/text_with_depth.py` | Text prompt, with GT depth |
 | Box Prompt | `configs/eval/omni3d/box_prompt.py` | GT 2D box as prompt |
 | Box Prompt + Depth | `configs/eval/omni3d/box_prompt_with_depth.py` | GT 2D box + GT depth |
-| 2D Only | `configs/eval/omni3d/eval_2d.py` | 2D detection metrics only |
 
 ```bash
 vis4d test --config configs/eval/omni3d/text.py --gpus 1 --ckpt ckpt/wilddet3d.pt
