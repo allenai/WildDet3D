@@ -141,6 +141,15 @@
 </tr>
 </table>
 
+## News
+
+- **2026-05-20** — Released Omni3D, ScanNet, Argoverse 2 evaluation configs (text / box-prompt × mono / GT-depth, 4 modes each). ([#15](https://github.com/allenai/WildDet3D/pull/15))
+- **2026-05-18** — Added a Boxer demo: WildDet3D as a drop-in detector for [Meta FAIR's Boxer](https://github.com/facebookresearch/boxer) indoor-labelling pipeline on Project Aria. ([#13](https://github.com/allenai/WildDet3D/pull/13))
+- **2026-05-17** — Released FoundationPose data preparation scripts (extract, 3D bbox, Qwen-VLM classifications). ([#12](https://github.com/allenai/WildDet3D/pull/12))
+- **2026-04-27** — Coordinate-transform fixes for tracking and the HuggingFace / VLM demos. ([#8](https://github.com/allenai/WildDet3D/pull/8), [#9](https://github.com/allenai/WildDet3D/pull/9))
+- **2026-04-19** — Released training code, WildDet3D-Data preparation scripts, and inference / visualization fixes. ([#6](https://github.com/allenai/WildDet3D/pull/6))
+- **2026-04-07** — Initial release: inference code, WildDet3D-Bench evaluation, HuggingFace Space, iPhone app, and project page.
+
 ## TODO
 - [x] Release inference code
 - [x] Release WildDet3D-Bench evaluation
@@ -149,6 +158,7 @@
 
 ## Contents
 - [Demo & Applications](#demo--applications)
+- [News](#news)
 - [Model Weights](#model-weights)
 - [Installation](#installation)
 - [Inference](#inference)
