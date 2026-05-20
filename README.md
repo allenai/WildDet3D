@@ -146,6 +146,7 @@
 - [x] Release WildDet3D-Bench evaluation
 - [x] Release training code
 - [x] Release evaluation on other benchmarks (Omni3D, Argoverse2, ScanNet)
+- [] Release WildDet3D-Embodied, WildDet3D finetuning on robotics data like Droid, better for robotics applications or serving as a backbone for robotics models.
 
 ## Contents
 - [Demo & Applications](#demo--applications)
