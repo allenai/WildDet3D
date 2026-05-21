@@ -273,6 +273,52 @@ draw_3d_boxes(
 | `input_boxes` / `input_points` | `None` | User prompt geometry for the red overlay |
 | `draw_prompt` | `False` | Enable the prompt overlay |
 
+## Faster Inference: BF16 Autocast + `torch.compile`
+
+`optimize_for_inference()` wraps the predictor with `torch.autocast` and (optionally) compiles it with `torch.compile`. On an H100 80GB this gives a **3.0x** speedup over FP32 eager with no detectable change in detection outputs.
+
+```python
+from wilddet3d import build_model, optimize_for_inference, preprocess
+
+model = build_model(
+    checkpoint="ckpt/wilddet3d_alldata_all_prompt_v1.0.pt",
+    skip_pretrained=True,
+)
+# BF16 autocast + compile (default: max-autotune-no-cudagraphs, ~3.0x speedup)
+model = optimize_for_inference(model)
+# Equivalent to:
+# model = optimize_for_inference(model, dtype="bf16", compile_mode="max-autotune-no-cudagraphs")
+# First call triggers compile (~17 min); subsequent calls hit the inductor cache.
+results = model(images=..., input_texts=["chair", "table"], ...)
+```
+
+### Latency (1008x1008 input, H100 80GB)
+
+| Config | Median | Speedup | Cos sim vs FP32 | Rel L2 vs FP32 |
+|---|---|---|---|---|
+| FP32 eager (baseline) | 219 ms | 1.00x | — | — |
+| BF16 autocast | 132 ms | **1.66x** | 1.0000 | 5e-4 |
+| BF16 + `torch.compile("default")` | 83 ms | **2.64x** | 1.0000 | 7e-4 |
+| BF16 + `torch.compile("max-autotune-no-cudagraphs")` **(default)** | 73 ms | **3.01x** | 1.0000 | 7e-4 |
+
+Reproduce with `python scripts/benchmark_inference.py`.
+
+### `optimize_for_inference()` Parameters
+
+| Parameter | Default | Description |
+|---|---|---|
+| `model` | (required) | A `WildDet3DPredictor` (the result of `build_model(...)`). |
+| `dtype` | `"bf16"` | Autocast dtype. `"bf16"` (recommended, Ampere+), `"fp16"` (older GPUs, slightly less stable on the depth head), `"fp32"` (no autocast). |
+| `compile_mode` | `"max-autotune-no-cudagraphs"` | `torch.compile` mode: `"max-autotune-no-cudagraphs"` (3.0x, ~17 min compile), `"default"` (2.6x, ~2 min compile), or `None` (no compile). |
+
+### Caveats
+
+- **PyTorch autocast preserves op-level precision policy** — `LayerNorm`, `softmax`, `log`, `exp`, `pow`, `reduce_sum` stay in FP32 automatically. This is why detection outputs are bit-equivalent to FP32 in practice. A static `model.half()` cast or naive ONNX FP16 export does **not** preserve this policy and will produce numerically wrong results.
+- **CUDA-graph modes are unsupported.** `compile_mode="reduce-overhead"` and `"max-autotune"` (which enable CUDA graph capture) crash during graph capture because the head produces dynamic shapes (NMS output count, boolean-mask indexing in canonical-rotation normalization). Use `"default"` or `"max-autotune-no-cudagraphs"` instead.
+- **First-time compile is slow.** Expect ~2 min for `"default"` and ~17 min for `"max-autotune-no-cudagraphs"`. Subsequent runs in the same process are near-instant; across processes the inductor cache speeds up re-compile.
+- **One graph break inside the model.** SAM3's geometry encoder calls `pin_memory()` which dynamo can't trace, so we set `torch._dynamo.config.suppress_errors = True` and let that fragment fall back to eager. The surrounding graph still compiles. This adds <1ms vs a hypothetical no-break version.
+- **Backwards / training is not the target.** `optimize_for_inference()` assumes `model.eval()` + `torch.no_grad()` and is only validated for inference.
+
 ## Batch Inference
 
 ```python
