@@ -331,6 +331,44 @@ draw_3d_boxes(
 
 See **[docs/INFERENCE.md](docs/INFERENCE.md)** for the full API reference.
 
+### Faster Inference (BF16 autocast + `torch.compile`)
+
+`optimize_for_inference()` wraps the predictor with `torch.autocast` and (optionally) `torch.compile`. On an H100 80GB this delivers a **3.0x speedup** over FP32 eager with the same detections (cosine similarity to FP32 = 1.000 to 4 decimals).
+
+```python
+from wilddet3d import build_model, optimize_for_inference, preprocess
+
+model = build_model(
+    checkpoint="ckpt/wilddet3d_alldata_all_prompt_v1.0.pt",
+    skip_pretrained=True,
+)
+
+# BF16 autocast + torch.compile (default: max-autotune-no-cudagraphs, ~3.0x speedup)
+model = optimize_for_inference(model)
+# Equivalent to:
+# model = optimize_for_inference(model, dtype="bf16", compile_mode="max-autotune-no-cudagraphs")
+
+# First call triggers compile (~17 min for max-autotune, ~2 min for "default").
+# Subsequent calls use the inductor cache.
+results = model(images=..., intrinsics=..., input_texts=["chair", "table"], ...)
+```
+
+**Latency** (1008x1008 input, text prompt, H100 80GB):
+
+| Config | Median latency | Speedup | vs FP32 (cos sim / rel L2) |
+|---|---|---|---|
+| FP32 eager (baseline) | 219 ms | 1.00x | — |
+| BF16 autocast | 132 ms | **1.66x** | 1.0000 / 5e-4 |
+| BF16 autocast + `torch.compile("default")` | 83 ms | **2.64x** | 1.0000 / 7e-4 |
+| BF16 autocast + `torch.compile("max-autotune-no-cudagraphs")` **(default)** | 73 ms | **3.01x** | 1.0000 / 7e-4 |
+
+**Notes:**
+- `dtype="bf16"` is recommended on Ampere or newer (A100 / H100 / RTX 30xx+). PyTorch autocast keeps numerically sensitive ops (LayerNorm / softmax / log / exp) in FP32 automatically, so detection outputs are bit-equivalent to FP32 in practice.
+- `compile_mode="max-autotune-no-cudagraphs"` (the default) is the fastest end-to-end. First-time compile takes ~17 min; the inductor cache speeds up subsequent runs.
+- `compile_mode="default"` gives 2.6x with a much shorter (~2 min) compile — use this if you iterate often.
+- `compile_mode="reduce-overhead"` / `"max-autotune"` (CUDA-graph modes) are **not** supported — the detection head has dynamic shapes from NMS / canonical-rotation masking.
+- Reproduce the numbers above with `python scripts/benchmark_inference.py`.
+
 ## Evaluation
 
 ### WildDet3D-Bench

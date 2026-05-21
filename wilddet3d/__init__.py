@@ -19,6 +19,7 @@ if _moge_path not in sys.path:
 from .data_types import Det3DOut, WildDet3DInput, WildDet3DOut
 from .inference import WildDet3DPredictor, build_model
 from .model import WildDet3D
+from .optimize import optimize_for_inference
 from .preprocessing import preprocess
 
 __all__ = [
@@ -28,5 +29,6 @@ __all__ = [
     "WildDet3DOut",
     "Det3DOut",
     "build_model",
+    "optimize_for_inference",
     "preprocess",
 ]
