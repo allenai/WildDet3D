@@ -56,6 +56,12 @@ MIXED_PRECISION=bf16 vis4d fit \
 
 **Output:** `vis4d-workspace/wilddet3d_stage1_omni3d/checkpoints/epoch=11-step=XXXX.ckpt`
 
+> **Skip Stage 1 — download the released checkpoint:** to start from a pretrained Stage 1 ckpt instead of running 12 epochs, grab it from HuggingFace:
+> ```bash
+> huggingface-cli download allenai/WildDet3D wilddet3d_stage1_omni3d_12e_v1.0.pt --local-dir ckpt/
+> ```
+> Same format as the released `wilddet3d_alldata_all_prompt_v1.0.pt` (state_dict + epoch/step + hparams, ~4.7 GB, optimizer state stripped). Pass it as `--ckpt ckpt/wilddet3d_stage1_omni3d_12e_v1.0.pt` to the Stage 2 command below.
+
 ### Stage 2: All-Data Dense Finetune
 
 Load Stage 1 checkpoint, train on 8 datasets with the plain 5-mode collator (text + box prompts, no mask):
@@ -82,6 +88,12 @@ MIXED_PRECISION=bf16 vis4d fit \
 Uses the plain `5mode` collator (text + box geometry prompts); point prompts sampled from masks are introduced in Stage 3.
 
 **Output:** `vis4d-workspace/wilddet3d_stage2_alldata/checkpoints/epoch=11-step=XXXX.ckpt`
+
+> **Skip Stage 2 — download the released checkpoint:** to start the Stage 3 finetune from a pretrained Stage 2 ckpt instead of running 12 epochs on 4 nodes, grab it from HuggingFace:
+> ```bash
+> huggingface-cli download allenai/WildDet3D wilddet3d_stage2_alldata_12e_v1.0.pt --local-dir ckpt/
+> ```
+> Same format as the released `wilddet3d_alldata_all_prompt_v1.0.pt` (state_dict + epoch/step + hparams, ~4.7 GB, optimizer state stripped). Pass it as `--ckpt ckpt/wilddet3d_stage2_alldata_12e_v1.0.pt` to the Stage 3 command below.
 
 ### Stage 3: High-Quality Mix-Prompt Finetune
 

@@ -182,10 +182,22 @@
 | WildDet3D | SAM3 ViT | LingBot-Depth (DINOv2 ViT-L/14) | ~1.2B | [allenai/WildDet3D](https://huggingface.co/allenai/WildDet3D) |
 
 ```bash
-# Download checkpoint
+# Download the released paper checkpoint (~4.7 GB)
 pip install huggingface_hub
 huggingface-cli download allenai/WildDet3D wilddet3d_alldata_all_prompt_v1.0.pt --local-dir ckpt/
 ```
+
+**Intermediate checkpoints (for partial reproduction of the 3-stage training):**
+
+```bash
+# Stage 1 -- Omni3D-only canonical, 12 epochs (~4.7 GB)
+huggingface-cli download allenai/WildDet3D wilddet3d_stage1_omni3d_12e_v1.0.pt --local-dir ckpt/
+
+# Stage 2 -- 8-dataset all-data finetune from Stage 1, 12 epochs (~4.7 GB)
+huggingface-cli download allenai/WildDet3D wilddet3d_stage2_alldata_12e_v1.0.pt --local-dir ckpt/
+```
+
+See [`docs/TRAINING.md`](docs/TRAINING.md) for how to load these as the starting point of the next stage.
 
 ## Installation
 
