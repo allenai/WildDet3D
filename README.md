@@ -177,9 +177,13 @@
 
 ## Model Weights
 
-| Model | Backbone | Depth Backend | Params | Download |
+| Checkpoint | Stage | Training Recipe | Size | Download |
 |---|---|---|---|---|
-| WildDet3D | SAM3 ViT | LingBot-Depth (DINOv2 ViT-L/14) | ~1.2B | [allenai/WildDet3D](https://huggingface.co/allenai/WildDet3D) |
+| `wilddet3d_alldata_all_prompt_v1.0.pt` | Stage 3 (paper) | Stage 2 ckpt &rarr; Omni3D + ITW-human mix-prompt finetune, 3 ep | ~4.7 GB | [allenai/WildDet3D](https://huggingface.co/allenai/WildDet3D/resolve/main/wilddet3d_alldata_all_prompt_v1.0.pt) |
+| `wilddet3d_stage2_alldata_12e_v1.0.pt` | Stage 2 (intermediate) | Stage 1 ckpt &rarr; 8-dataset all-data finetune, 12 ep | ~4.7 GB | [allenai/WildDet3D](https://huggingface.co/allenai/WildDet3D/resolve/main/wilddet3d_stage2_alldata_12e_v1.0.pt) |
+| `wilddet3d_stage1_omni3d_12e_v1.0.pt` | Stage 1 (intermediate) | Omni3D-only canonical rotation, 12 ep from scratch | ~4.7 GB | [allenai/WildDet3D](https://huggingface.co/allenai/WildDet3D/resolve/main/wilddet3d_stage1_omni3d_12e_v1.0.pt) |
+
+All three share the same architecture (SAM3 ViT backbone + LingBot-Depth DINOv2 ViT-L/14 geometry backend, ~1.2B params) and the same stripped format (`state_dict` + `epoch`/`step` + `hparams`, optimizer state stripped). Pick the latest stage you need; for the paper numbers, use `wilddet3d_alldata_all_prompt_v1.0.pt`.
 
 ```bash
 # Download the released paper checkpoint (~4.7 GB)
